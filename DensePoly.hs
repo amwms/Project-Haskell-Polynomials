@@ -4,6 +4,8 @@ import PolyClass
 import Representation
 
 instance Functor DensePoly where
+    fmap :: (a -> b) -> DensePoly a -> DensePoly b
+    fmap fun (P xs) = P $ map fun xs
 
 instance Polynomial DensePoly where
 
