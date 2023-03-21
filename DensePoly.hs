@@ -72,10 +72,10 @@ instance (Eq a, Num a) => Num (DensePoly a) where
 
 instance (Eq a, Num a) => Eq (DensePoly a) where
     (==) :: DensePoly a -> DensePoly a -> Bool
-    (==) x y = degree x == degree y && unP x == unP y
+    (==) x y = degree x == degree y && dropWhile (0 ==) (reverse (unP x)) ==  dropWhile (0 ==) (reverse (unP y))
 
     (/=) :: DensePoly a -> DensePoly a -> Bool
-    (/=) x y = degree x /= degree y || unP x /= unP y
+    (/=) x y = degree x /= degree y || dropWhile (0 ==) (reverse (unP x)) /= dropWhile (0 ==) (reverse (unP y))
 
 -- |
 -- >>>  P [1,2] == P [1,2]
