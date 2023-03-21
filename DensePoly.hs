@@ -7,17 +7,24 @@ instance Functor DensePoly where
 
 instance Polynomial DensePoly where
 
+    zeroP :: DensePoly a
     zeroP = P []
+
+    constP :: (Eq a, Num a) => a -> DensePoly a
     constP x = P [x]
 
-    -- varP   :: Num a => p a                  -- p(x) = x
+    varP   :: Num a => DensePoly a                  -- p(x) = x
+    varP = P [0, 1]
 
-    -- evalP  :: Num a => p a -> a -> a        -- value of p(x) at given x
+    evalP  :: Num a => DensePoly a -> a -> a        -- value of p(x) at given x
+    evalP (P xs) x = go xs 0 where
+        go [] _ = 0
+        go (x:xs) n = x * (x ^ n) + go xs (n + 1)
 
-    shiftP :: (Eq a, Num a) => Int -> DensePoly a -> DensePoly a
+    shiftP :: (Eq a, Num a) => Int -> DensePoly a -> DensePoly a -- multiply by x^n
     shiftP n (P xs) = P $ replicate n 0 ++ reverse (dropWhile (0 ==) (reverse xs))
 
-    degree :: (Eq a, Num a) => DensePoly a -> Int
+    degree :: (Eq a, Num a) => DensePoly a -> Int -- highest power with nonzero coefficient
     degree (P xs) = length (dropWhile (0 ==) (reverse xs)) - 1
 
 instance (Eq a, Num a) => Num (DensePoly a) where
