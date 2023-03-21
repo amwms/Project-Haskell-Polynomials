@@ -21,7 +21,7 @@ instance Polynomial DensePoly where
     evalP  :: Num a => DensePoly a -> a -> a        -- value of p(x) at given x
     evalP (P xs) x = go xs 0 where
         go [] _ = 0
-        go (x:xs) n = x * (x ^ n) + go xs (n + 1)
+        go (h:xs) n = h * (x ^ n) + go xs (n + 1)
 
     shiftP :: (Eq a, Num a) => Int -> DensePoly a -> DensePoly a -- multiply by x^n
     shiftP n (P xs) = P $ replicate n 0 ++ reverse (dropWhile (0 ==) (reverse xs))
