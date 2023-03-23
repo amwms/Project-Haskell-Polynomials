@@ -10,9 +10,6 @@ pairFirst (x, y) = x
 pairSecond :: (a, b) -> b
 pairSecond (x, y) = y
 
--- sparseToCanonical :: (Eq coef, Num coef) => [(Int, coef)] -> [(Int, coef)]
--- sparseToCanonical = filter (\x -> snd x /= 0)
-
 listToCanonical :: (Eq coef, Num coef) => [(Int, coef)] -> [(Int, coef)]
 listToCanonical xs = filter (\x -> snd x /= 0) $ reverse $ go [] (sortOn (negate . fst) xs) where
     go list [] = list
@@ -63,7 +60,7 @@ instance Polynomial SparsePoly where
     evalP :: Num a => SparsePoly a -> a -> a        -- value of p(x) at given x
     evalP (S xs) x = go xs where
         go [] = 0
-        go (h:xs) = pairSecond h * (x ^ pairFirst h) + go xs
+        go (h : xs) = pairSecond h * (x ^ pairFirst h) + go xs
 
     shiftP :: (Eq a, Num a) => Int -> SparsePoly a -> SparsePoly a -- multiply by x^n
     shiftP n (S xs) = S $ map (first (+n)) xs
