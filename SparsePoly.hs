@@ -14,9 +14,10 @@ fromDP = undefined -- TODO
 toDP = undefined -- TODO
 
 first :: (a -> a') -> (a, b) -> (a', b)
-first = undefined -- TODO
+first f (x, y) = (f x, y)  
+
 second :: (b -> b') -> (a, b) -> (a, b')
-second = undefined -- TODO
+second f (x, y) = (x, f y)
 
 pairFirst :: (a, b) -> a
 pairFirst (x, y) = x
