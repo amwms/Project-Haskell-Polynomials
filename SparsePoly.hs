@@ -53,7 +53,7 @@ instance Polynomial SparsePoly where
     zeroP = S []
 
     constP :: (Eq a, Num a) => a -> SparsePoly a
-    constP x 
+    constP x
         | x == 0 = S []
         | otherwise = S [(0, x)]
 
@@ -87,7 +87,7 @@ instance (Eq a, Num a) => Num (SparsePoly a) where
         | otherwise = S [(0, fromInteger x)]
 
     (+) :: (Eq a, Num a) => SparsePoly a -> SparsePoly a -> SparsePoly a
-    (+) x y = S $ listToCanonical $ (unS x) ++ (unS y)
+    (+) x y = S $ listToCanonical $ unS x ++ unS y
     -- (+) x y = S $ listToCanonical (go [] (unS x) (unS y)) where
     --     go list [] [] = list
     --     go list [] (y:ys) = go (y:list) [] ys
@@ -97,7 +97,6 @@ instance (Eq a, Num a) => Num (SparsePoly a) where
     --         | pairFirst x > pairFirst y = go (x:list) xs (y:ys)
     --         | otherwise = go (y:list) (x:xs) ys
 
-    -- TODO (*)
     (*) :: (Eq a, Num a) => SparsePoly a -> SparsePoly a -> SparsePoly a
     (*) x y = S $ listToCanonical [(exp1 + exp2, coef1 * coef2) | (exp1, coef1) <- unS x, (exp2, coef2) <- unS y]
     -- (*) x y = S $ listToCanonical (go [] (unS x) (unS y)) where
@@ -125,7 +124,11 @@ instance (Eq a, Num a) => Eq (SparsePoly a) where
 
 -- qrP s t | not(nullP t) = (q, r) iff s == q*t + r && degree r < degree t
 qrP :: (Eq a, Fractional a) => SparsePoly a -> SparsePoly a -> (SparsePoly a, SparsePoly a)
-qrP = undefined -- TODO
+qrP x y = go (zeroP, x) where
+    go (q, r)
+        | nullP r || degree r < degree y = (q, r)
+        | otherwise = go (q + res, r - res * y)
+        where res = S [(pairFirst (head $ unS r) - pairFirst (head $ unS y), pairSecond (head $ unS r) / pairSecond (head $ unS y))]
 
 -- | Division example
 -- >>> qrP (x^2 - 1) (x -1) == ((x + 1), 0)
