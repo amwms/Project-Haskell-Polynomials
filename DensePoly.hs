@@ -32,7 +32,7 @@ instance Polynomial DensePoly where
         go (h : xs) n = h * (x ^ n) + go xs (n + 1)
 
     shiftP :: (Eq a, Num a) => Int -> DensePoly a -> DensePoly a -- multiply by x^n
-    shiftP n (P xs) = P $ replicate n 0 ++ toCanonical xs
+    shiftP n (P xs) = P $ toCanonical $ replicate n 0 ++ xs
 
     degree :: (Eq a, Num a) => DensePoly a -> Int -- highest power with nonzero coefficient
     degree (P xs) = length (dropWhile (0 ==) (reverse xs)) - 1
