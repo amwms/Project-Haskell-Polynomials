@@ -14,7 +14,12 @@ pairSecond (x, y) = y
 -- sparseToCanonical = filter (\x -> snd x /= 0)
 
 listToCanonical :: (Eq coef, Num coef) => [(Int, coef)] -> [(Int, coef)]
-listToCanonical = filter (\x -> snd x /= 0) . sortOn (negate . fst)
+listToCanonical xs = filter (\x -> snd x /= 0) $ reverse $ go [] (sortOn (negate . fst) xs) where
+    go list [] = list
+    go [] (x : xs) = go [x] xs
+    go (h : list) (x : xs)
+        | pairFirst x == pairFirst h = go (addSamePower x h : list) xs
+        | otherwise = go (x : h : list) xs
 
 addSamePower :: Num coef => (Int, coef) -> (Int, coef) -> (Int, coef)
 addSamePower x y = (pairFirst x, pairSecond x + pairSecond y)
@@ -82,18 +87,19 @@ instance (Eq a, Num a) => Num (SparsePoly a) where
         | otherwise = S [(0, fromInteger x)]
 
     (+) :: (Eq a, Num a) => SparsePoly a -> SparsePoly a -> SparsePoly a
-    (+) x y = S $ listToCanonical (go [] (unS x) (unS y)) where
-        go list [] [] = list
-        go list [] (y:ys) = go (y:list) [] ys
-        go list (x:xs) [] = go (x:list) xs []
-        go list (x:xs) (y:ys)
-            | pairFirst x == pairFirst y = go ((addSamePower x y):list) xs ys
-            | pairFirst x > pairFirst y = go (x:list) xs (y:ys)
-            | otherwise = go (y:list) (x:xs) ys
+    (+) x y = S $ listToCanonical $ (unS x) ++ (unS y)
+    -- (+) x y = S $ listToCanonical (go [] (unS x) (unS y)) where
+    --     go list [] [] = list
+    --     go list [] (y:ys) = go (y:list) [] ys
+    --     go list (x:xs) [] = go (x:list) xs []
+    --     go list (x:xs) (y:ys)
+    --         | pairFirst x == pairFirst y = go ((addSamePower x y) : list) xs ys
+    --         | pairFirst x > pairFirst y = go (x:list) xs (y:ys)
+    --         | otherwise = go (y:list) (x:xs) ys
 
     -- TODO (*)
-    -- (*) :: (Eq a, Num a) => SparsePoly a -> SparsePoly a -> SparsePoly a
-    -- (*) x y = S $ sparseToCanonicalAndReverse (go [] (unS x) (unS y)) where
+    (*) :: (Eq a, Num a) => SparsePoly a -> SparsePoly a -> SparsePoly a
+    -- (*) x y = S $ listToCanonical (go [] (unS x) (unS y)) where
     --     go list [] [] = list
     --     go list [] (y:ys) = go (y:list) [] ys
     --     go list (x:xs) [] = go (x:list) xs []
