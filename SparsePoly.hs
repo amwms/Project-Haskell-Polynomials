@@ -2,8 +2,7 @@
 module SparsePoly(fromDP, toDP, qrP) where
 import PolyClass
 import Representation
-import Distribution.Simple.Program.HcPkg (list)
-import Distribution.Simple.Utils (xargs)
+import Data.List (sort)
 
 -- | fromDP example
 -- >>> fromDP sampleDP
@@ -11,31 +10,31 @@ import Distribution.Simple.Utils (xargs)
 fromDP :: (Eq a, Num a) => DensePoly a -> SparsePoly a
 toDP :: (Eq a, Num a) => SparsePoly a -> DensePoly a
 
-fromDP = undefined
-toDP = undefined
+fromDP = undefined -- TODO
+toDP = undefined -- TODO
 
 first :: (a -> a') -> (a, b) -> (a', b)
-first = undefined
+first = undefined -- TODO
 second :: (b -> b') -> (a, b) -> (a, b')
-second = undefined
+second = undefined -- TODO
 
 pairFirst :: (a, b) -> a
 pairFirst (x, y) = x
 pairSecond :: (a, b) -> b
 pairSecond (x, y) = y
 
--- TODO 
-sparseToCanonicalAndReverse :: (Eq a, Num a) => [a] -> [a]
-sparseToCanonicalAndReverse xs = go [] xs where
-    go list [] = list
-    go list (x:xs)
-        | pairSecond x == 0 = go list xs
-        | otherwise = go (x:list) xs
+sparseToCanonical :: (Eq coef, Num coef) => [(Int, coef)] -> [(Int, coef)]
+sparseToCanonical = filter (\x -> snd x /= 0) 
 
-addSamePower :: Num b => (a, b) -> (a, b) -> (a, b)
+listToCanonical :: (Eq coef, Num coef) => [(Int, coef)] -> [(Int, coef)]
+listToCanonical xs = filter (\x -> snd x /= 0) xs
+
+addSamePower :: Num coef => (Int, coef) -> (Int, coef) -> (Int, coef)
 addSamePower x y = (pairFirst x, pairSecond x + pairSecond y)
 
 instance Functor SparsePoly where
+    fmap :: (a -> b) -> SparsePoly a -> SparsePoly b
+    fmap fun (S xs) = S $ map (second fun) xs
 
 instance Polynomial SparsePoly where
     zeroP :: SparsePoly a
@@ -56,7 +55,9 @@ instance Polynomial SparsePoly where
     shiftP n (S xs) = S $ map (first (+n)) xs
 
     degree :: (Eq a, Num a) => SparsePoly a -> Int -- highest power with nonzero coefficient
-    degree (S xs) = pairFirst $ head xs
+    degree (S xs) = case xs of
+        [] -> -1
+        x : _ -> pairFirst x
 
 instance (Eq a, Num a) => Num (SparsePoly a) where
 
@@ -71,9 +72,8 @@ instance (Eq a, Num a) => Num (SparsePoly a) where
         | x == 0 = S []
         | otherwise = S [(0, fromInteger x)]
 
-    -- TODO - correct (+)
     (+) :: (Eq a, Num a) => SparsePoly a -> SparsePoly a -> SparsePoly a
-    (+) x y = S $ sparseToCanonicalAndReverse (go [] (unS x) (unS y)) where
+    (+) x y = S $ reverse $ listToCanonical (go [] (unS x) (unS y)) where
         go list [] [] = list
         go list [] (y:ys) = go (y:list) [] ys
         go list (x:xs) [] = go (x:list) xs []
@@ -83,20 +83,33 @@ instance (Eq a, Num a) => Num (SparsePoly a) where
             | otherwise = go (y:list) (x:xs) ys
 
     -- TODO (*)
+    -- (*) :: (Eq a, Num a) => SparsePoly a -> SparsePoly a -> SparsePoly a
+    -- (*) x y = S $ sparseToCanonicalAndReverse (go [] (unS x) (unS y)) where
+    --     go list [] [] = list
+    --     go list [] (y:ys) = go (y:list) [] ys
+    --     go list (x:xs) [] = go (x:list) xs []
+    --     go list (x:xs) (y:ys) = go ((pairFirst x + pairFirst y, pairSecond x * pairSecond y):list) xs ys
 
     negate :: (Eq a, Num a) => SparsePoly a -> SparsePoly a
-    negate x = S $ reverse (go [] (unS x)) where
-        go list (x:xs) = go ((pairFirst x, negate (pairSecond x)):list) xs
-        go list [] = list
+    negate x = S $ listToCanonical $ map (\x -> (pairFirst x, negate (pairSecond x))) (unS x)
+    -- negate x = S $ reverse (go [] (unS x)) where
+    --     go list [] = list
+    --     go list (x : xs) = go ((pairFirst x, negate (pairSecond x)) : list) xs
+
+    (-) :: (Eq a, Num a) => SparsePoly a -> SparsePoly a -> SparsePoly a
+    (-) x y = x + negate y
 
 
 instance (Eq a, Num a) => Eq (SparsePoly a) where
     (==) :: (Eq a, Num a) => SparsePoly a -> SparsePoly a -> Bool
     p == q = nullP(p-q)
 
+    (/=) :: (Eq a, Num a) => SparsePoly a -> SparsePoly a -> Bool
+    p /= q = not (nullP(p-q))
+
 -- qrP s t | not(nullP t) = (q, r) iff s == q*t + r && degree r < degree t
 qrP :: (Eq a, Fractional a) => SparsePoly a -> SparsePoly a -> (SparsePoly a, SparsePoly a)
-qrP = undefined
+qrP = undefined -- TODO
 
 -- | Division example
 -- >>> qrP (x^2 - 1) (x -1) == ((x + 1), 0)
