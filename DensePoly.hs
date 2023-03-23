@@ -19,7 +19,9 @@ instance Polynomial DensePoly where
     zeroP = P []
 
     constP :: (Eq a, Num a) => a -> DensePoly a
-    constP x = P [x]
+    constP x 
+        | x == 0 = P []
+        | otherwise = P [x]
 
     varP   :: Num a => DensePoly a                  -- p(x) = x
     varP = P [0, 1]
