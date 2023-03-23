@@ -99,6 +99,7 @@ instance (Eq a, Num a) => Num (SparsePoly a) where
 
     -- TODO (*)
     (*) :: (Eq a, Num a) => SparsePoly a -> SparsePoly a -> SparsePoly a
+    (*) x y = S $ listToCanonical [(exp1 + exp2, coef1 * coef2) | (exp1, coef1) <- unS x, (exp2, coef2) <- unS y]
     -- (*) x y = S $ listToCanonical (go [] (unS x) (unS y)) where
     --     go list [] [] = list
     --     go list [] (y:ys) = go (y:list) [] ys
