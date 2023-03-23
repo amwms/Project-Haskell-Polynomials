@@ -2,7 +2,22 @@
 module SparsePoly(fromDP, toDP, qrP) where
 import PolyClass
 import Representation
-import Data.List (sort)
+import Data.List (sort, sortOn)
+
+pairFirst :: (a, b) -> a
+pairFirst (x, y) = x
+
+pairSecond :: (a, b) -> b
+pairSecond (x, y) = y
+
+-- sparseToCanonical :: (Eq coef, Num coef) => [(Int, coef)] -> [(Int, coef)]
+-- sparseToCanonical = filter (\x -> snd x /= 0)
+
+listToCanonical :: (Eq coef, Num coef) => [(Int, coef)] -> [(Int, coef)]
+listToCanonical = filter (\x -> snd x /= 0) . sortOn (negate . fst)
+
+addSamePower :: Num coef => (Int, coef) -> (Int, coef) -> (Int, coef)
+addSamePower x y = (pairFirst x, pairSecond x + pairSecond y)
 
 -- | fromDP example
 -- >>> fromDP sampleDP
@@ -10,28 +25,19 @@ import Data.List (sort)
 fromDP :: (Eq a, Num a) => DensePoly a -> SparsePoly a
 toDP :: (Eq a, Num a) => SparsePoly a -> DensePoly a
 
-fromDP = undefined -- TODO
-toDP = undefined -- TODO
+fromDP (P xs) = S $ listToCanonical $ zip [0..] xs
+
+-- toDP (S xs) = sum $ map (\(i, a) -> shiftP i (constP a)) (listToCanonical xs)
+-- toDP (S xs) = sum $ map (\(i, a) -> P ((replicate i 0) ++ [a])) (listToCanonical xs)
+toDP (S xs) = P $ go 0 (reverse (listToCanonical xs)) where
+    go _ [] = []
+    go n ((i, a) : xs) = replicate (i - n) 0 ++ [a] ++ go (i + 1) xs
 
 first :: (a -> a') -> (a, b) -> (a', b)
-first f (x, y) = (f x, y)  
+first f (x, y) = (f x, y)
 
 second :: (b -> b') -> (a, b) -> (a, b')
 second f (x, y) = (x, f y)
-
-pairFirst :: (a, b) -> a
-pairFirst (x, y) = x
-pairSecond :: (a, b) -> b
-pairSecond (x, y) = y
-
-sparseToCanonical :: (Eq coef, Num coef) => [(Int, coef)] -> [(Int, coef)]
-sparseToCanonical = filter (\x -> snd x /= 0) 
-
-listToCanonical :: (Eq coef, Num coef) => [(Int, coef)] -> [(Int, coef)]
-listToCanonical xs = filter (\x -> snd x /= 0) xs
-
-addSamePower :: Num coef => (Int, coef) -> (Int, coef) -> (Int, coef)
-addSamePower x y = (pairFirst x, pairSecond x + pairSecond y)
 
 instance Functor SparsePoly where
     fmap :: (a -> b) -> SparsePoly a -> SparsePoly b
@@ -42,7 +48,9 @@ instance Polynomial SparsePoly where
     zeroP = S []
 
     constP :: (Eq a, Num a) => a -> SparsePoly a
-    constP x = S [(0, x)]
+    constP x 
+        | x == 0 = S []
+        | otherwise = S [(0, x)]
 
     varP   :: Num a => SparsePoly a                  -- p(x) = x
     varP = S [(1, 1)]
@@ -74,7 +82,7 @@ instance (Eq a, Num a) => Num (SparsePoly a) where
         | otherwise = S [(0, fromInteger x)]
 
     (+) :: (Eq a, Num a) => SparsePoly a -> SparsePoly a -> SparsePoly a
-    (+) x y = S $ reverse $ listToCanonical (go [] (unS x) (unS y)) where
+    (+) x y = S $ listToCanonical (go [] (unS x) (unS y)) where
         go list [] [] = list
         go list [] (y:ys) = go (y:list) [] ys
         go list (x:xs) [] = go (x:list) xs []
