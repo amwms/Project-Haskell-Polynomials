@@ -23,18 +23,18 @@ instance Polynomial DensePoly where
         | x == 0 = P []
         | otherwise = P [x]
 
-    varP   :: Num a => DensePoly a                  -- p(x) = x
+    varP   :: Num a => DensePoly a                 
     varP = P [0, 1]
 
-    evalP  :: Num a => DensePoly a -> a -> a        -- value of p(x) at given x
+    evalP  :: Num a => DensePoly a -> a -> a        
     evalP (P xs) x = go xs 0 where
         go [] _ = 0
         go (h : xs) n = h * (x ^ n) + go xs (n + 1)
 
-    shiftP :: (Eq a, Num a) => Int -> DensePoly a -> DensePoly a -- multiply by x^n
+    shiftP :: (Eq a, Num a) => Int -> DensePoly a -> DensePoly a 
     shiftP n (P xs) = P $ toCanonical $ replicate n 0 ++ xs
 
-    degree :: (Eq a, Num a) => DensePoly a -> Int -- highest power with nonzero coefficient
+    degree :: (Eq a, Num a) => DensePoly a -> Int 
     degree (P xs) = length (dropWhile (0 ==) (reverse xs)) - 1
 
 instance (Eq a, Num a) => Num (DensePoly a) where
@@ -57,18 +57,13 @@ instance (Eq a, Num a) => Num (DensePoly a) where
         go list [] (y : ys) = go (y : list) [] ys
         go list (x : xs) (y : ys) = go (x + y : list) xs ys
 
-    -- -- TODO (*)
     (*) :: (Eq a, Num a) => DensePoly a -> DensePoly a -> DensePoly a
     (*) x y = go (unP x) (unP y) where
         go [] _  = P []
         go (x:xs) ys =  P $ toCanonical (unP $ (P ((map (*x) ys))) + (P ((0 : unP (go xs ys)))))
 
-
     negate :: (Eq a, Num a) => DensePoly a -> DensePoly a
     negate x = P $ toCanonical $ map (* (-1)) (unP x)
-    -- negate x = P $ reverseToCanonical (go [] (unP x)) where
-    --     go list [] = list
-    --     go list (x : xs) = go (-x : list) xs
 
 -- |
 -- >>> x^3 - 1 :: DensePoly Integer 

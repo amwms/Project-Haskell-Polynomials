@@ -29,8 +29,6 @@ toDP :: (Eq a, Num a) => SparsePoly a -> DensePoly a
 
 fromDP (P xs) = S $ listToCanonical $ zip [0..] xs
 
--- toDP (S xs) = sum $ map (\(i, a) -> shiftP i (constP a)) (listToCanonical xs)
--- toDP (S xs) = sum $ map (\(i, a) -> P ((replicate i 0) ++ [a])) (listToCanonical xs)
 toDP (S xs) = P $ go 0 (reverse (listToCanonical xs)) where
     go _ [] = []
     go n ((i, a) : xs) = replicate (i - n) 0 ++ [a] ++ go (i + 1) xs
@@ -54,18 +52,18 @@ instance Polynomial SparsePoly where
         | x == 0 = S []
         | otherwise = S [(0, x)]
 
-    varP   :: Num a => SparsePoly a                  -- p(x) = x
+    varP   :: Num a => SparsePoly a                 
     varP = S [(1, 1)]
 
-    evalP :: Num a => SparsePoly a -> a -> a        -- value of p(x) at given x
+    evalP :: Num a => SparsePoly a -> a -> a        
     evalP (S xs) x = go xs where
         go [] = 0
         go (h : xs) = pairSecond h * (x ^ pairFirst h) + go xs
 
-    shiftP :: (Eq a, Num a) => Int -> SparsePoly a -> SparsePoly a -- multiply by x^n
+    shiftP :: (Eq a, Num a) => Int -> SparsePoly a -> SparsePoly a 
     shiftP n (S xs) = S $ map (first (+n)) xs
 
-    degree :: (Eq a, Num a) => SparsePoly a -> Int -- highest power with nonzero coefficient
+    degree :: (Eq a, Num a) => SparsePoly a -> Int 
     degree (S xs) = case xs of
         [] -> -1
         x : _ -> pairFirst x
@@ -85,32 +83,15 @@ instance (Eq a, Num a) => Num (SparsePoly a) where
 
     (+) :: (Eq a, Num a) => SparsePoly a -> SparsePoly a -> SparsePoly a
     (+) x y = S $ listToCanonical $ unS x ++ unS y
-    -- (+) x y = S $ listToCanonical (go [] (unS x) (unS y)) where
-    --     go list [] [] = list
-    --     go list [] (y:ys) = go (y:list) [] ys
-    --     go list (x:xs) [] = go (x:list) xs []
-    --     go list (x:xs) (y:ys)
-    --         | pairFirst x == pairFirst y = go ((addSamePower x y) : list) xs ys
-    --         | pairFirst x > pairFirst y = go (x:list) xs (y:ys)
-    --         | otherwise = go (y:list) (x:xs) ys
 
     (*) :: (Eq a, Num a) => SparsePoly a -> SparsePoly a -> SparsePoly a
     (*) x y = S $ listToCanonical [(exp1 + exp2, coef1 * coef2) | (exp1, coef1) <- unS x, (exp2, coef2) <- unS y]
-    -- (*) x y = S $ listToCanonical (go [] (unS x) (unS y)) where
-    --     go list [] [] = list
-    --     go list [] (y:ys) = go (y:list) [] ys
-    --     go list (x:xs) [] = go (x:list) xs []
-    --     go list (x:xs) (y:ys) = go ((pairFirst x + pairFirst y, pairSecond x * pairSecond y):list) xs ys
 
     negate :: (Eq a, Num a) => SparsePoly a -> SparsePoly a
     negate x = S $ listToCanonical $ map (\x -> (pairFirst x, negate (pairSecond x))) (unS x)
-    -- negate x = S $ reverse (go [] (unS x)) where
-    --     go list [] = list
-    --     go list (x : xs) = go ((pairFirst x, negate (pairSecond x)) : list) xs
 
     (-) :: (Eq a, Num a) => SparsePoly a -> SparsePoly a -> SparsePoly a
     (-) x y = x + negate y
-
 
 instance (Eq a, Num a) => Eq (SparsePoly a) where
     (==) :: (Eq a, Num a) => SparsePoly a -> SparsePoly a -> Bool
@@ -119,7 +100,6 @@ instance (Eq a, Num a) => Eq (SparsePoly a) where
     (/=) :: (Eq a, Num a) => SparsePoly a -> SparsePoly a -> Bool
     p /= q = not (nullP(p-q))
 
--- qrP s t | not(nullP t) = (q, r) iff s == q*t + r && degree r < degree t
 qrP :: (Eq a, Fractional a) => SparsePoly a -> SparsePoly a -> (SparsePoly a, SparsePoly a)
 qrP x y = go (zeroP, x) where
     go (q, r)
