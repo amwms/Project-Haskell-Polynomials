@@ -75,9 +75,6 @@ instance (Eq a, Num a) => Num (SparsePoly a) where
     signum x = undefined
 
     -- fromInteger :: (Eq a, Num a) => Integer -> SparsePoly a
-    -- fromInteger x
-    --     | x == 0 = S []
-    --     | otherwise = S [(0, fromInteger x)]
     fromInteger x = constP (fromInteger x)
 
     -- (+) :: (Eq a, Num a) => SparsePoly a -> SparsePoly a -> SparsePoly a
