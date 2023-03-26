@@ -21,7 +21,7 @@ instance Polynomial DensePoly where
         | x == 0 = P []
         | otherwise = P [x]
 
-    -- varP   :: Num a => DensePoly a                 
+    -- varP :: Num a => DensePoly a                 
     varP = P [0, 1]
 
     -- evalP  :: Num a => DensePoly a -> a -> a        
@@ -55,7 +55,7 @@ instance (Eq a, Num a) => Num (DensePoly a) where
     -- (*) :: (Eq a, Num a) => DensePoly a -> DensePoly a -> DensePoly a
     (*) x y = go (unP x) (unP y) where
         go [] _  = P []
-        go (x:xs) ys =  P $ toCanonical (unP $ (P ((map (*x) ys))) + (P ((0 : unP (go xs ys)))))
+        go (x : xs) ys =  P $ toCanonical (unP $ P (map (*x) ys) + shiftP 1 (go xs ys))
 
     -- negate :: (Eq a, Num a) => DensePoly a -> DensePoly a
     negate x = P $ toCanonical $ map (* (-1)) (unP x)
@@ -70,10 +70,10 @@ instance (Eq a, Num a) => Num (DensePoly a) where
 
 instance (Eq a, Num a) => Eq (DensePoly a) where
     -- (==) :: DensePoly a -> DensePoly a -> Bool
-    (==) x y = degree x == degree y && dropWhile (0 ==) (reverse (unP x)) ==  dropWhile (0 ==) (reverse (unP y))
+    (==) x y = degree x == degree y && toCanonical (unP x) ==  toCanonical (unP y)
 
     -- (/=) :: DensePoly a -> DensePoly a -> Bool
-    (/=) x y = degree x /= degree y || dropWhile (0 ==) (reverse (unP x)) /= dropWhile (0 ==) (reverse (unP y))
+    (/=) x y = degree x /= degree y || toCanonical (unP x) /= toCanonical (unP y)
 
 -- |
 -- >>>  P [1,2] == P [1,2]

@@ -91,10 +91,10 @@ instance (Eq a, Num a) => Num (SparsePoly a) where
 
 instance (Eq a, Num a) => Eq (SparsePoly a) where
     -- (==) :: (Eq a, Num a) => SparsePoly a -> SparsePoly a -> Bool
-    p == q = nullP(p-q)
+    p == q = nullP (p - q)
 
     -- (/=) :: (Eq a, Num a) => SparsePoly a -> SparsePoly a -> Bool
-    p /= q = not (nullP(p-q))
+    p /= q = not (nullP (p - q))
 
 -- TODO - check if it always works for non-canonical polynomials
 qrP :: (Eq a, Fractional a) => SparsePoly a -> SparsePoly a -> (SparsePoly a, SparsePoly a)
