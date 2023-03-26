@@ -33,7 +33,8 @@ instance Polynomial DensePoly where
     shiftP n (P xs) = P $ toCanonical $ replicate n 0 ++ xs
 
     -- degree :: (Eq a, Num a) => DensePoly a -> Int 
-    degree (P xs) = length (dropWhile (0 ==) (reverse xs)) - 1
+    -- degree (P xs) = length (dropWhile (0 ==) (reverse xs)) - 1
+    degree (P xs) = length (toCanonical xs) - 1
 
 instance (Eq a, Num a) => Num (DensePoly a) where
     -- abs :: (Eq a, Num a) => DensePoly a -> DensePoly a
@@ -43,9 +44,10 @@ instance (Eq a, Num a) => Num (DensePoly a) where
     signum x = undefined
 
     -- fromInteger :: Integer -> DensePoly a
-    fromInteger x
-        | x == 0 = P []
-        | otherwise = P [fromInteger x]
+    -- fromInteger x
+    --     | x == 0 = P []
+    --     | otherwise = P [fromInteger x]    
+    fromInteger x  = constP $ fromInteger x
 
     -- (+) :: (Eq a, Num a) => DensePoly a -> DensePoly a -> DensePoly a
     (+) x y = P $ reverseToCanonical (go [] (unP x) (unP y)) where

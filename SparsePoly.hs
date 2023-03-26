@@ -60,10 +60,10 @@ instance Polynomial SparsePoly where
         go (h : xs) = pairSecond h * (x ^ pairFirst h) + go xs
 
     -- shiftP :: (Eq a, Num a) => Int -> SparsePoly a -> SparsePoly a 
-    shiftP n (S xs) = S $ map (first (+n)) xs
+    shiftP n (S xs) = S $ map (first (+n)) $ listToCanonical xs
 
     -- degree :: (Eq a, Num a) => SparsePoly a -> Int 
-    degree (S xs) = case xs of
+    degree (S xs) = case listToCanonical xs of
         [] -> -1
         x : _ -> pairFirst x
 
@@ -75,9 +75,10 @@ instance (Eq a, Num a) => Num (SparsePoly a) where
     signum x = undefined
 
     -- fromInteger :: (Eq a, Num a) => Integer -> SparsePoly a
-    fromInteger x
-        | x == 0 = S []
-        | otherwise = S [(0, fromInteger x)]
+    -- fromInteger x
+    --     | x == 0 = S []
+    --     | otherwise = S [(0, fromInteger x)]
+    fromInteger x = constP (fromInteger x)
 
     -- (+) :: (Eq a, Num a) => SparsePoly a -> SparsePoly a -> SparsePoly a
     (+) x y = S $ listToCanonical $ unS x ++ unS y
@@ -98,6 +99,7 @@ instance (Eq a, Num a) => Eq (SparsePoly a) where
     -- (/=) :: (Eq a, Num a) => SparsePoly a -> SparsePoly a -> Bool
     p /= q = not (nullP(p-q))
 
+-- TODO - check if it always works for non-canonical polynomials
 qrP :: (Eq a, Fractional a) => SparsePoly a -> SparsePoly a -> (SparsePoly a, SparsePoly a)
 qrP x y = go (zeroP, x) where
     go (q, r)
