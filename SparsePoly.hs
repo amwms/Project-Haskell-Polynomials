@@ -3,22 +3,16 @@ import PolyClass
 import Representation
 import Data.List (sort, sortOn)
 
-pairFirst :: (a, b) -> a
-pairFirst (x, y) = x
-
-pairSecond :: (a, b) -> b
-pairSecond (x, y) = y
-
 listToCanonical :: (Eq coef, Num coef) => [(Int, coef)] -> [(Int, coef)]
 listToCanonical xs = filter (\x -> snd x /= 0) $ reverse $ go [] (sortOn (negate . fst) xs) where
     go list [] = list
     go [] (x : xs) = go [x] xs
     go (h : list) (x : xs)
-        | pairFirst x == pairFirst h = go (addSamePower x h : list) xs
+        | fst x == fst h = go (addSamePower x h : list) xs
         | otherwise = go (x : h : list) xs
 
 addSamePower :: Num coef => (Int, coef) -> (Int, coef) -> (Int, coef)
-addSamePower x y = (pairFirst x, pairSecond x + pairSecond y)
+addSamePower x y = (fst x, snd x + snd y)
 
 -- | fromDP example
 -- >>> fromDP sampleDP
@@ -57,7 +51,7 @@ instance Polynomial SparsePoly where
     -- evalP :: Num a => SparsePoly a -> a -> a        
     evalP (S xs) x = go xs where
         go [] = 0
-        go (h : xs) = pairSecond h * (x ^ pairFirst h) + go xs
+        go (h : xs) = snd h * (x ^ fst h) + go xs
 
     -- shiftP :: (Eq a, Num a) => Int -> SparsePoly a -> SparsePoly a 
     shiftP n (S xs) = S $ map (first (+n)) $ listToCanonical xs
@@ -65,7 +59,7 @@ instance Polynomial SparsePoly where
     -- degree :: (Eq a, Num a) => SparsePoly a -> Int 
     degree (S xs) = case listToCanonical xs of
         [] -> -1
-        x : _ -> pairFirst x
+        x : _ -> fst x
 
 instance (Eq a, Num a) => Num (SparsePoly a) where
     -- abs :: (Eq a, Num a) => SparsePoly a -> SparsePoly a
@@ -84,7 +78,7 @@ instance (Eq a, Num a) => Num (SparsePoly a) where
     (*) x y = S $ listToCanonical [(exp1 + exp2, coef1 * coef2) | (exp1, coef1) <- unS x, (exp2, coef2) <- unS y]
 
     -- negate :: (Eq a, Num a) => SparsePoly a -> SparsePoly a
-    negate x = S $ listToCanonical $ map (\x -> (pairFirst x, negate (pairSecond x))) (unS x)
+    negate x = S $ listToCanonical $ map (\x -> (fst x, negate (snd x))) (unS x)
 
     -- (-) :: (Eq a, Num a) => SparsePoly a -> SparsePoly a -> SparsePoly a
     (-) x y = x + negate y
@@ -96,13 +90,13 @@ instance (Eq a, Num a) => Eq (SparsePoly a) where
     -- (/=) :: (Eq a, Num a) => SparsePoly a -> SparsePoly a -> Bool
     p /= q = not (nullP (p - q))
 
--- TODO - check if it always works for non-canonical polynomials
 qrP :: (Eq a, Fractional a) => SparsePoly a -> SparsePoly a -> (SparsePoly a, SparsePoly a)
-qrP x y = go (zeroP, x) where
-    go (q, r)
-        | nullP r || degree r < degree y = (q, r)
-        | otherwise = go (q + res, r - res * y)
-        where res = S [(pairFirst (head $ unS r) - pairFirst (head $ unS y), pairSecond (head $ unS r) / pairSecond (head $ unS y))]
+qrP x y = qrP' (S (listToCanonical (unS x)), S (listToCanonical (unS y))) where
+    qrP' (x, y) = go (zeroP, x) where
+        go (q, r)
+            | nullP r || degree r < degree y = (q, r)
+            | otherwise = go (q + res, r - res * y)
+            where res = S [(fst (head $ unS r) - fst (head $ unS y), snd (head $ unS r) / snd (head $ unS y))]
 
 -- | Division example
 -- >>> qrP (x^2 - 1) (x -1) == ((x + 1), 0)
