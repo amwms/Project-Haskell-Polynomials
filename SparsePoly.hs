@@ -91,8 +91,8 @@ instance (Eq a, Num a) => Eq (SparsePoly a) where
     p /= q = not (nullP (p - q))
 
 qrP :: (Eq a, Fractional a) => SparsePoly a -> SparsePoly a -> (SparsePoly a, SparsePoly a)
-qrP x y = qrP' (S (listToCanonical (unS x)), S (listToCanonical (unS y))) where
-    qrP' (x, y) = go (zeroP, x) where
+qrP xPoly yPoly = qrPInner (S (listToCanonical (unS xPoly)), S (listToCanonical (unS yPoly))) where
+    qrPInner (x, y) = go (zeroP, x) where
         go (q, r)
             | nullP r || degree r < degree y = (q, r)
             | otherwise = go (q + res, r - res * y)
